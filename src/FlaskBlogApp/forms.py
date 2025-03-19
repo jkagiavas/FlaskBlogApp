@@ -1,6 +1,6 @@
 
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, TextAreaField
+from wtforms import StringField, SubmitField, TextAreaField, BooleanField
 from wtforms.validators import DataRequired, Email, Length, EqualTo, ValidationError
 from FlaskBlogApp.models import User
 
@@ -41,6 +41,7 @@ class LoginForm(FlaskForm):
 
     password = StringField(label="Password",
                            validators=[DataRequired(message="Αυτό το πεδίο δεν μπορεί να είναι κενό.")])
+    remember_me = BooleanField(label="Remember me")
 
     submit = SubmitField("Είσοδος")
 
