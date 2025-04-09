@@ -3,6 +3,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, TextAreaField, BooleanField
 from wtforms.validators import DataRequired, Email, Length, EqualTo, ValidationError
 from FlaskBlogApp.models import User
+from flask_login import current_user
 
 def validate_email(form, email):
     user = User.query.filter_by(email=email.data).first()
@@ -56,3 +57,27 @@ class NewArticleForm(FlaskForm):
                                     Length(min =5,message="Αυτό το πεδίο πρέπει να έχει τουλαχιστον 5 χαρακτήρες")])
 
     submit = SubmitField("Αποστολή")
+
+
+class AccountUpdateForm(FlaskForm):
+    username = StringField(label="Username",
+                           validators=[DataRequired(message="Αυτό το πεδίο δεν μπορεί να είναι κενό."),
+                                       Length(min =3, max=15,message="Αυτό το πεδίο πρέπει να είναι από 3 έως 15 χαρακτήρες")])
+
+    email = StringField(label="Εmail",
+                        validators=[DataRequired(message="Αυτό το πεδίο δεν μπορεί να είναι κενό."),
+                                    Email(message="Παρακαλώ εισάγετε ένα σωστό Email")])
+
+    submit = SubmitField("Αποστολή")
+
+    def validate_username(self, username):
+        if username.data != current_user.username:
+            user = User.query.filter_by(username=username.data).first()
+            if user:
+                raise ValidationError('Αυτο το username υπάρχει ήδη')
+
+    def validate_email(self, email):
+        if email.data != current_user.email:
+            user = User.query.filter_by(email=email.data).first()
+            if user:
+                raise ValidationError('Αυτο το email υπάρχει ήδη')

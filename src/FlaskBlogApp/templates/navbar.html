@@ -14,15 +14,35 @@
         </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        <li class="nav-item">
-          <a class="nav-link" href="/signup/">Εγγραφή</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/login/">Login</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/logout/">Logout</a>
-        </li>
+
+        {% if current_user.is_authenticated %}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+               data-bs-toggle="dropdown" aria-expanded="false">
+              <img class="rounded-circle navbar-profile-image" src="{{ url_for('static',
+              filename='images/profiles_images/'+current_user.profile_image) }}" alt="{{current_user.username }}" data-holder-rendered="true" data-bs-toggle="tooltip" data-bs-placement="top" title='{{current_user.username }}'>
+            </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <li>
+              <a class="dropdown-item" href="/account/">{{current_user.username }}</a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="/logout/">Έξοδος</a>
+            </li>
+           </ul>
+          </li>
+
+      </ul>
+
+        {% else %}
+
+          <li class="nav-item">
+            <a class="nav-link" href="/signup/">Εγγραφή</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/login/">Είσοδος</a>
+          </li>
+        {% endif %}
       </ul>
     </div>
   </div>

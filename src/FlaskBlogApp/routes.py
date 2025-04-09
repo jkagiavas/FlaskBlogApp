@@ -3,7 +3,7 @@ from flask import (render_template,
                    url_for,
                    request,
                    flash)
-from FlaskBlogApp.forms import SignupForm, LoginForm, NewArticleForm
+from FlaskBlogApp.forms import SignupForm, LoginForm, NewArticleForm, AccountUpdateForm
 from FlaskBlogApp import app, db, bcrypt
 from FlaskBlogApp.models import User, Article
 from flask_login import login_user, current_user, logout_user, login_required
@@ -82,3 +82,18 @@ def new_article():
 
     return render_template("new_article.html", form=form)
 
+@app.route("/account/", methods=['GET', 'POST'])
+@login_required
+def account():
+    form = AccountUpdateForm(username=current_user.username, email=current_user.email)
+
+    if request.method == 'Post' and form.validate_on_submit():
+        current_user.username = form.username.data
+        current_user.email = form.email.data
+
+        db.session.commit()
+
+        flash(f"Ο λογαριασμός του χρήστη <b>{current_user.username}</b> ενημερώθηκε με επίτυχία", "success")
+
+        return redirect(url_for('root'))
+    return render_template("account_update.html", form=form)
