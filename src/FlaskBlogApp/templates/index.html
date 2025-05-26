@@ -7,24 +7,39 @@
 
 
 {% block content %}
-{% if current_user.is_authenticated %}
-    {{current_user }}
-{% endif %}
+
 
 {% if articles %}
-<ul>
     {% for article in articles %}
+        <div class="row my-3 p-3 bg-body rounded shadow-sm">
+          <div class="col col-md-12">
+            {% if article.article_image  %}
+              <img src="{{ url_for('static', filename='images/articles_images/'+article.article_image) }}" alt="" class="img-responsive a_image" width="640px" height="360px">
+            {% endif %}
+          </div>
+          <div class="col col-md-12">
+            <div class="main-article-title">
+              <a class="article_title" href="#">{{ article.article_title | safe }}</a>
+            </div>
+            <small class="article_date">[{{ article.date_created.strftime('%d-%m-%Y') }}]</small>
+            <p class="main-article-partial-text">
+              {{ article.article_body | truncate(255) | safe }}
+            </p>
+            <p class="">Από
+              <span>
+                <a class="author-name" href="#"> {{ article.author.username }}
+                  <img class="rounded-circle profile-image" alt="{{ article.author.username }}" src="{{ url_for('static', filename='images/profiles_images/'+article.author.profile_image) }}" data-holder-rendered="true" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ article.author.username }}">
+                </a>
+              </span>
+            </p>
+          </div>
+        </div>
 
-    <li>
-        [ {{ article.date_created.strftime('%d-%m-%Y') }} ] <br>
-        {{ article.article_title }} <br>
-        {{ article.article_body | truncate(255) }} <br>
-        {{ article.author.username }} <br>
-    </li>
+        <hr>
+
+
+
     {% endfor %}
-
-</ul>
-
 {% endif %}
 
 {% endblock content %}

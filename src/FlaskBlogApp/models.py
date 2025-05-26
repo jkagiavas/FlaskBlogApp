@@ -21,7 +21,7 @@ class Article(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     article_title = db.Column(db.String(50), nullable=False)
     article_body  = db.Column(db.Text(), nullable=False)
-    article_image = db.Column(db.String(30), default ='default_profile_image.jpg')
+    article_image = db.Column(db.String(30), default ='default_article_image.jpg')
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 

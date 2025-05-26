@@ -1,3 +1,5 @@
+from os import abort
+
 from flask import (render_template,
                    redirect,
                    url_for,
@@ -12,7 +14,7 @@ from flask_login import login_user, current_user, logout_user, login_required
 @app.route("/index/")
 @app.route("/")
 def root():
-    articles = Article.query.all()
+    articles = Article.query.order_by(Article.date_created.desc())
     return render_template("index.html", articles=articles)
 
 
@@ -76,18 +78,28 @@ def new_article():
         article_title = form.article_title.data
         article_body = form.article_body.data
 
-        print(article_title, article_body)
+        article = Article(article_title=article_title, article_body=article_body, author=current_user)
+        db.session.add(article)
+        db.session.commit()
 
-
+        flash(f"Το άρθρο με τίτλο {article.article_title} δημιουργήθηκε με επιτυχία")
+        return redirect(url_for("root"))
 
     return render_template("new_article.html", form=form)
+
+
+@app.route("/full_article/<int:article_id>", methods=["GET"])
+def full_article(article_id):
+    article = Article.query.get_or_404(article_id)
+
+    return render_template("full_article.html", article=article)
 
 @app.route("/account/", methods=['GET', 'POST'])
 @login_required
 def account():
     form = AccountUpdateForm(username=current_user.username, email=current_user.email)
 
-    if request.method == 'Post' and form.validate_on_submit():
+    if request.method == 'POST' and form.validate_on_submit():
         current_user.username = form.username.data
         current_user.email = form.email.data
 
@@ -97,3 +109,22 @@ def account():
 
         return redirect(url_for('root'))
     return render_template("account_update.html", form=form)
+
+@app.route("/edit_article/<int:article_id>", methods=['GET', 'POST'])
+@login_required
+def edit_article(article_id):
+    article = Article.query.filter_by(id=article_id, author=current_user).first_or_404()
+
+    form = NewArticleForm(article_title=article.article_title, article_body=article.article_body)
+
+    if request.method == 'POST' and form.validate_on_submit():
+        article.article_title = form.article_title.data
+        article.article_body = form.article_body.data
+
+        db.session.commit()
+
+        flash(f"Το άρθρο με τίτλο <b>{article.article_title} </b>ενημερώθηκε με επιτυχία.", "success")
+
+        return redirect(url_for('root'))
+    return render_template("new_article.html", form=form)
+
