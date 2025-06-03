@@ -8,6 +8,14 @@
 
 {% block content %}
 
+    <h2 class="aba_header">
+        Άρθρα από τον {{author.username }}
+        <img class="rounded-circle profile-image" alt="{{ author.username }}"
+             src="{{ url_for('static', filename='images/profiles_images/'+author.profile_image) }}"
+             data-holder-rendered="true" data-bs-toggle="tooltip" data-bs-placement="top"
+             title="{{ author.username }}">
+    </h2>
+    <hr>
 
 {% if articles %}
     {% for article in articles %}
@@ -28,10 +36,12 @@
             </p>
             <p class="">Από
               <span>
-                <a class="author-name" href="{{ url_for('articles_by_author', author_id=article.author.id) }}"> {{ article.author.username }}
+                <a class="author-name" href="{{ url_for('articles_by_author', author_id=article.author.id) }}">
+                    {{ article.author.username }}
                   <img class="rounded-circle profile-image" alt="{{ article.author.username }}"
                        src="{{ url_for('static', filename='images/profiles_images/'+article.author.profile_image) }}"
-                       data-holder-rendered="true" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ article.author.username }}">
+                       data-holder-rendered="true" data-bs-toggle="tooltip" data-bs-placement="top"
+                       title="{{ article.author.username }}">
                 </a>
               </span>
             </p>

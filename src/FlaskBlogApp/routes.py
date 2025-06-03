@@ -9,13 +9,38 @@ from FlaskBlogApp.forms import SignupForm, LoginForm, NewArticleForm, AccountUpd
 from FlaskBlogApp import app, db, bcrypt
 from FlaskBlogApp.models import User, Article
 from flask_login import login_user, current_user, logout_user, login_required
+import secrets, os
+from PIL import Image
 
+#το size είναι ένα tuple της μορφής (640,480)
+def image_save(image, where, size):
+    random_filename = secrets.token_hex(12)
+    file_name , file_extension = os.path.splitext(image.filename)
+    image_filename =random_filename + file_extension
+
+    image_path =os.path.join(app.root_path, 'static/images', where, image_filename)
+
+    img = Image.open(image)
+    img.thumbnail(size)
+    img.save(image_path)
+
+    return image_filename
 
 @app.route("/index/")
 @app.route("/")
 def root():
     articles = Article.query.order_by(Article.date_created.desc())
     return render_template("index.html", articles=articles)
+
+
+@app.route("/articles_by_author/<int:author_id>")
+def articles_by_author(author_id):
+
+    user = User.query.get_or_404(author_id)
+
+    articles = Article.query.filter_by(author=user).order_by(Article.date_created.desc())
+
+    return render_template("articles_by_author.html", articles=articles, author=user)
 
 
 @app.route("/signup/", methods=["GET", "POST"])
@@ -119,6 +144,11 @@ def account():
     if request.method == 'POST' and form.validate_on_submit():
         current_user.username = form.username.data
         current_user.email = form.email.data
+
+        #image_save(image, where, size)
+
+        image_file = image_save(form.profile_image.data, 'profiles_images', (150, 150))
+        current_user.profile_image = image_file
 
         db.session.commit()
 
