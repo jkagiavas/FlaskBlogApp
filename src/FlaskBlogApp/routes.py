@@ -12,6 +12,17 @@ from flask_login import login_user, current_user, logout_user, login_required
 import secrets, os
 from PIL import Image
 
+@app.errorhandler(404)
+def page_not_found(e):
+    # note that we ser the 404 status explicity
+    return render_template('errors/404.html'), 404
+
+
+@app.errorhandler(415)
+def page_not_found(e):
+    # note that we ser the 415 status explicity
+    return render_template('errors/415.html'), 415
+
 #το size είναι ένα tuple της μορφής (640,480)
 def image_save(image, where, size):
     random_filename = secrets.token_hex(12)
@@ -29,7 +40,8 @@ def image_save(image, where, size):
 @app.route("/index/")
 @app.route("/")
 def root():
-    articles = Article.query.order_by(Article.date_created.desc())
+    page = request.args.get("page", 1, type=int)
+    articles = Article.query.order_by(Article.date_created.desc()).paginate(per_page=2, page=page)
     return render_template("index.html", articles=articles)
 
 
@@ -38,7 +50,9 @@ def articles_by_author(author_id):
 
     user = User.query.get_or_404(author_id)
 
-    articles = Article.query.filter_by(author=user).order_by(Article.date_created.desc())
+    page = request.args.get("page", 1, type=int)
+    articles = Article.query.filter_by(author=user).order_by(Article.date_created.desc()).paginate(per_page=2, page=page)
+
 
     return render_template("articles_by_author.html", articles=articles, author=user)
 
@@ -103,7 +117,20 @@ def new_article():
         article_title = form.article_title.data
         article_body = form.article_body.data
 
-        article = Article(article_title=article_title, article_body=article_body, author=current_user)
+        # image_save(image, where, size)
+        if form.article_image.data:
+            try:
+                image_file = image_save(form.article_image.data, 'articles_images', (640, 360))
+            except:
+                abort(415)
+            article = Article(article_title=article_title,
+                              article_body=article_body,
+                              author=current_user,
+                              article_image=image_file)
+        else:
+            article = Article(article_title=article_title, article_body=article_body, author=current_user)
+
+
         db.session.add(article)
         db.session.commit()
 
@@ -146,9 +173,13 @@ def account():
         current_user.email = form.email.data
 
         #image_save(image, where, size)
+        if form.profile_image.data:
+            try:
+                image_file = image_save(form.profile_image.data, 'profiles_images', (150, 150))
+            except:
+                abort(415)
 
-        image_file = image_save(form.profile_image.data, 'profiles_images', (150, 150))
-        current_user.profile_image = image_file
+            current_user.profile_image = image_file
 
         db.session.commit()
 
@@ -167,6 +198,16 @@ def edit_article(article_id):
     if request.method == 'POST' and form.validate_on_submit():
         article.article_title = form.article_title.data
         article.article_body = form.article_body.data
+
+        # image_save(image, where, size)
+        if form.article_image.data:
+            try:
+                image_file = image_save(form.article_image.data, 'articles_images', (640, 360))
+            except:
+                abort(415)
+
+            article.article_image =  image_file
+
 
         db.session.commit()
 
