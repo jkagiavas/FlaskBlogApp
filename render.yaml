@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: flaskblog
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn FlaskBlogApp:app"
+    envVars:
+      - key: SECRET_KEY
+        sync: false
+      - key: WTF_CSRF_SECRET_KEY
+        sync: false
+    plan: free
+    region: frankfurt
