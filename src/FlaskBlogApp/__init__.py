@@ -25,4 +25,4 @@ login_manager.login_message_category = "warning"
 login_manager.login_message = "Παρακαλούμε κάντε login για να μπορέσετε να δείτε αυτή τη σελίδα."
 
 
-from FlaskBlogApp import routes, models
+from . import routes, models

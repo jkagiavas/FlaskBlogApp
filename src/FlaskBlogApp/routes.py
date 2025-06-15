@@ -5,9 +5,9 @@ from flask import (render_template,
                    url_for,
                    request,
                    flash)
-from FlaskBlogApp.forms import SignupForm, LoginForm, NewArticleForm, AccountUpdateForm
-from FlaskBlogApp import app, db, bcrypt
-from FlaskBlogApp.models import User, Article
+from .forms import SignupForm, LoginForm, NewArticleForm, AccountUpdateForm
+from . import app, db, bcrypt
+from .models import User, Article
 from flask_login import login_user, current_user, logout_user, login_required
 import secrets, os
 from PIL import Image

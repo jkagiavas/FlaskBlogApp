@@ -1,4 +1,4 @@
-from FlaskBlogApp import db, login_manager
+from . import db, login_manager
 from datetime import datetime
 from flask_login import UserMixin
 @login_manager.user_loader
