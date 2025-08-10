@@ -78,6 +78,29 @@
   </div>
 </div>
 
+<h4>Σχόλια</h4>
+{% for comment in comments %}
+<div class="card mb-2">
+    <div class="card-body">
+        <p class="mb-1">{{ comment.content }}</p>
+        <small class="text-muted">από {{ comment.author.username }} στις {{ comment.date_posted.strftime("%d/%m/%Y %H:%M") }}</small>
+    </div>
+</div>
+{% else %}
+<p>Δεν υπάρχουν σχόλια ακόμα.</p>
+{% endfor %}
+
+{% if current_user.is_authenticated %}
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <div class="mb-3">
+        {{ form.content(class="form-control", placeholder="Γράψτε το σχόλιό σας...") }}
+    </div>
+    <button type="submit" class="btn btn-primary">Προσθήκη Σχολίου</button>
+</form>
+{% else %}
+<p><a href="{{ url_for('login') }}">Συνδεθείτε</a> για να σχολιάσετε.</p>
+{% endif %}
 {% endblock content %}
 
 

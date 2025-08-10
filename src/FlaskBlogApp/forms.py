@@ -2,9 +2,9 @@ from typing import Optional
 
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, SubmitField, TextAreaField, BooleanField
+from wtforms import StringField, SubmitField, TextAreaField, BooleanField, SelectField
 from wtforms.validators import DataRequired, Email, Length, EqualTo, ValidationError, Optional
-from .models import User
+from .models import User, Category, Topic
 from flask_login import current_user
 
 
@@ -69,8 +69,14 @@ class NewArticleForm(FlaskForm):
                                                            FileAllowed(['jpg', 'jpeg', 'png'],
                                                                        'Επιτρέπονται μονο αρχεία τύπου jpg, jpeg και png'),
                                                            maxImageSize(max_size=2)])
+    category = SelectField('Κατηγορία', coerce=int)
 
-    submit = SubmitField("Αποστολή")
+    # Αυτό για τα Topics, μόνο αν είναι Autism
+    topic = SelectField('Topic', coerce=int, choices=[], validate_choice=False)
+
+    submit = SubmitField('Αποστολή')
+
+
 
 
 class AccountUpdateForm(FlaskForm):
@@ -99,3 +105,13 @@ class AccountUpdateForm(FlaskForm):
             user = User.query.filter_by(email=email.data).first()
             if user:
                 raise ValidationError('Αυτό το email υπάρχει ήδη')
+
+class CommentForm(FlaskForm):
+    content = TextAreaField(
+        'Σχόλιο',
+        validators=[
+            DataRequired(message="Το σχόλιο δεν μπορεί να είναι κενό."),
+            Length(min=2, max=500, message="Το σχόλιο πρέπει να έχει 2 έως 500 χαρακτήρες.")
+        ]
+    )
+    submit = SubmitField('Προσθήκη Σχολίου')

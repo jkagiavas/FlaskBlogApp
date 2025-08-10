@@ -1,13 +1,14 @@
 from os import abort
+from unicodedata import category
 
 from flask import (render_template,
                    redirect,
                    url_for,
                    request,
                    flash)
-from .forms import SignupForm, LoginForm, NewArticleForm, AccountUpdateForm
+from .forms import SignupForm, LoginForm, NewArticleForm, AccountUpdateForm, CommentForm
 from . import app, db, bcrypt
-from .models import User, Article
+from .models import User, Article, Category, Topic, Comment
 from flask_login import login_user, current_user, logout_user, login_required
 import secrets, os
 from PIL import Image
@@ -111,11 +112,26 @@ def logout():
 @app.route("/new_article/", methods=["GET", "POST"])
 @login_required
 def new_article():
+
     form = NewArticleForm()
+
+    # Categories για χρήστη
+    if current_user.username == "jkayabas_dev":
+        form.category.choices = [(c.id, c.name) for c in Category.query.all()]
+    else:
+        autism = Category.query.filter_by(name="Autism").first()
+        form.category.choices = [(autism.id, 'Αυτισμός')] if autism else []
+
+    # Topics αν η κατηγορία είναι Autism
+    autism = Category.query.filter_by(name="Autism").first()
+    if autism:
+        form.topic.choices = [(t.id, t.name) for t in Topic.query.filter_by(category_id=autism.id).all()]
 
     if request.method == 'POST' and form.validate_on_submit():
         article_title = form.article_title.data
         article_body = form.article_body.data
+        category_id = form.category.data
+        topic_id = form.topic.data if category_id == autism.id and form.topic.data else None
 
         # image_save(image, where, size)
         if form.article_image.data:
@@ -126,25 +142,54 @@ def new_article():
             article = Article(article_title=article_title,
                               article_body=article_body,
                               author=current_user,
-                              article_image=image_file)
+                              article_image=image_file,
+                              category_id=category_id,
+                              topic_id=topic_id
+                              )
+
         else:
-            article = Article(article_title=article_title, article_body=article_body, author=current_user)
+            article = Article(
+                article_title=article_title,
+                article_body=article_body,
+                author=current_user,
+                category_id=category_id,
+                topic_id=topic_id
+            )
 
 
         db.session.add(article)
         db.session.commit()
 
-        flash(f"Το άρθρο με τίτλο {article.article_title} δημιουργήθηκε με επιτυχία")
+        flash(f"Το άρθρο με τίτλο «{article.article_title}» δημιουργήθηκε με επιτυχία", "success")
         return redirect(url_for("root"))
+
+
 
     return render_template("new_article.html", form=form, page_title="Εισαγωγή Νέου Άρθρου")
 
 
-@app.route("/full_article/<int:article_id>", methods=["GET"])
+@app.route("/full_article/<int:article_id>", methods=["GET", "POST"])
 def full_article(article_id):
     article = Article.query.get_or_404(article_id)
 
-    return render_template("full_article.html", article=article)
+    form = CommentForm()
+
+    if form.validate_on_submit():
+        if not current_user.is_authenticated:
+            flash("Πρέπει να συνδεθείτε για να σχολιάσετε.", "danger")
+            return redirect(url_for("login"))
+        comment = Comment(
+            content=form.content.data,
+            author=current_user,
+            article=article
+        )
+        db.session.add(comment)
+        db.session.commit()
+        flash("Το σχόλιό σας προστέθηκε!", "success")
+        return redirect(url_for("full_article", article_id=article.id))
+
+    comments = Comment.query.filter_by(article_id=article.id).order_by(Comment.date_posted.asc()).all()
+    return render_template("full_article.html", article=article, comments=comments, form=form)
 
 
 @app.route("/delete_article/<int:article_id>", methods=["GET", "POST"])
@@ -216,3 +261,33 @@ def edit_article(article_id):
         return redirect(url_for('root'))
     return render_template("new_article.html", form=form, page_title="Επεξεργασία Άρθρου")
 
+@app.route('/autism')
+def autism():
+    category = Category.query.filter_by(name='Autism').first_or_404()
+    topics = Topic.query.filter_by(category_id=category.id).all()
+    articles = Article.query.filter_by(category_id=category.id).order_by(Article.date_created.desc()).all()
+    return render_template('autism.html', category=category, topics=topics, articles=articles)
+
+@app.route('/autism/topic/<string:topic_name>')
+def topic_articles(topic_name):
+    topic = Topic.query.filter_by(name=topic_name).first_or_404()
+    articles = Article.query.filter_by(topic_id=topic.id).order_by(Article.date_created.desc()).all()
+    return render_template('topic_articles.html', topic=topic, articles=articles)
+
+@app.route('/autism/topic_redirect')
+def topic_articles_redirect():
+    topic_name = request.args.get('topic_name')
+    if topic_name:
+        return redirect(url_for('topic_articles', topic_name=topic_name))
+    return redirect(url_for('autism'))
+
+@app.route('/projects')
+def projects():
+    category = Category.query.filter_by(name='Projects').first_or_404()
+    user = User.query.filter_by(username='jkayabas_dev').first()
+    if not user:
+        flash("Ο χρήστης jkayabas_dev δεν βρέθηκε.", "warning")
+        return redirect(url_for('home'))
+
+    articles = Article.query.filter_by(category_id=category.id, user_id=user.id).order_by(Article.date_created.desc()).all()
+    return render_template('projects.html', articles=articles)

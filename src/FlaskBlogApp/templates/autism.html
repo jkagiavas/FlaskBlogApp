@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="container mt-4">
+    <h2 class="mb-4">Άρθρα για τον Αυτισμό</h2>
+
+    <!-- Dropdown για Topic -->
+    <form method="GET" action="{{ url_for('topic_articles_redirect') }}">
+      <div class="form-group">
+        <label for="topicSelect">Φιλτράρισμα ανά θέμα:</label>
+        <select id="topicSelect" name="topic_name" class="form-control" onchange="this.form.submit()">
+          <option value="">-- Όλα τα θέματα --</option>
+          {% for topic in topics %}
+            <option value="{{ topic.name }}">{{ topic.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </form>
+
+    <!-- Λίστα Άρθρων -->
+    {% for article in articles %}
+      <div class="card my-3">
+        <div class="card-body">
+          <h4 class="card-title">{{ article.article_title }}</h4>
+          <p class="card-text">{{ article.article_body[:250] }}...</p>
+          <a href="{{ url_for('article_detail', article_id=article.id) }}" class="btn btn-primary">Διαβάστε περισσότερα</a>
+        </div>
+        <div class="card-footer text-muted">
+          Από {{ article.author.username }} - {{ article.date_created.strftime('%d/%m/%Y') }}
+          {% if article.topic %}
+            | Θέμα: <strong>{{ article.topic.name }}</strong>
+          {% endif %}
+        </div>
+      </div>
+    {% else %}
+      <p>Δεν υπάρχουν άρθρα προς το παρόν.</p>
+    {% endfor %}
+  </div>
+{% endblock %}
