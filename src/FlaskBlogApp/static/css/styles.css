@@ -6,6 +6,25 @@ body {
 	margin-top: 20px;
 }
 
+.banner {
+    background-image: url("../images/jkayabas.png");
+    background-size: contain;       /* Η εικόνα καλύπτει όλο το div */
+    background-position: center;  /* Κεντράρισμα εικόνας */
+    background-repeat: no-repeat; /* Αποφυγή επανάληψης */
+    width: 100%;
+    height: auto; /* Ύψος που μπορείς να αλλάξεις ανάλογα με την οθόνη */
+    aspect-ratio: 1920 / 500;
+}
+
+/* Για μικρές οθόνες (κινητά) */
+@media (max-width: 768px) {
+    .banner {
+        height: auto; /* Μικρότερο ύψος για κινητά */
+        background-position: center top; /* Ίσως θέλεις να δείχνει πιο πάνω */
+    }
+}
+
+
 .main-article-title{
 	font-size: 2em;
 	font-weight: bold;
@@ -102,3 +121,4 @@ footer{
     margin-left: auto;
     margin-right: auto;
 }
+
