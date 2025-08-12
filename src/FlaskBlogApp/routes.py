@@ -42,7 +42,7 @@ def image_save(image, where, size):
 @app.route("/")
 def root():
     page = request.args.get("page", 1, type=int)
-    articles = Article.query.order_by(Article.date_created.desc()).paginate(per_page=2, page=page)
+    articles = Article.query.order_by(Article.date_created.desc()).paginate(per_page=5, page=page)
     return render_template("index.html", articles=articles)
 
 
@@ -238,27 +238,48 @@ def account():
 def edit_article(article_id):
     article = Article.query.filter_by(id=article_id, author=current_user).first_or_404()
 
-    form = NewArticleForm(article_title=article.article_title, article_body=article.article_body)
+    form = NewArticleForm(
+        article_title=article.article_title,
+        article_body=article.article_body,
+        category=article.category_id,
+        topic=article.topic_id
+    )
+    if current_user.username == "jkayabas_dev":
+        form.category.choices = [(c.id, c.name) for c in Category.query.all()]
+    else:
+        autism = Category.query.filter_by(name="Autism").first()
+        form.category.choices = [(autism.id, 'Αυτισμός')] if autism else []
+
+    autism = Category.query.filter_by(name="Autism").first()
+    selected_category_id = form.category.data or article.category_id
+
+    if autism and selected_category_id == autism.id:
+        form.topic.choices = [(t.id, t.name) for t in Topic.query.filter_by(category_id=autism.id).all()]
+    else:
+        form.topic.choices = []
+        form.topic.data = None
 
     if request.method == 'POST' and form.validate_on_submit():
         article.article_title = form.article_title.data
         article.article_body = form.article_body.data
-
+        article.category_id = form.category.data
+        article.topic_id = form.topic.data if form.topic.data else None
         # image_save(image, where, size)
         if form.article_image.data:
             try:
                 image_file = image_save(form.article_image.data, 'articles_images', (640, 360))
+                article.article_image = image_file
             except:
                 abort(415)
 
-            article.article_image =  image_file
+
 
 
         db.session.commit()
 
         flash(f"Το άρθρο με τίτλο <b>{article.article_title} </b>ενημερώθηκε με επιτυχία.", "success")
-
         return redirect(url_for('root'))
+
     return render_template("new_article.html", form=form, page_title="Επεξεργασία Άρθρου")
 
 @app.route('/autism')

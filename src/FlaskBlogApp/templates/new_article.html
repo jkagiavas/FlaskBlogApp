@@ -48,10 +48,10 @@
                     {{ form.article_image.label(class="form-label") }}
                     {{ form.article_image(class="form-control") }}
                     <div id="article_imageHelp" class="form-text">
-                        Παρακαλώ δώστε μια εικόνα για το προφίλ σας.</div>
+                        Παρακαλώ δώστε μια εικόνα για το άρθρο σας.</div>
                     {% if form.article_image.errors %}
                         <ul class="errors">
-                            {%for error in form.email.errors %}
+                            {%for error in form.article_image.errors %}
                                <li class="alert text-danger">
                                    {{ error }}
                                </li>

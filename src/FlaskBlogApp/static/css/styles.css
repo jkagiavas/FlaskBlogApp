@@ -15,13 +15,18 @@ body {
     height: auto; /* Ύψος που μπορείς να αλλάξεις ανάλογα με την οθόνη */
     aspect-ratio: 1920 / 500;
 }
-
-/* Για μικρές οθόνες (κινητά) */
 @media (max-width: 768px) {
-    .banner {
-        height: auto; /* Μικρότερο ύψος για κινητά */
-        background-position: center top; /* Ίσως θέλεις να δείχνει πιο πάνω */
-    }
+  .banner {
+    height: 250px; /* πιο μικρό ύψος στο κινητό */
+    object-position: center top; /* εστιάζει πιο πολύ στο πάνω μέρος */
+  }
+}
+
+@media (max-width: 480px) {
+  .banner {
+    height: 200px;
+    object-position: center; /* ίσως θέλεις να το αλλάξεις σε left/right ανάλογα τι θέλεις να φαίνεται */
+  }
 }
 
 
