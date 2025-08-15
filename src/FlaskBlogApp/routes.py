@@ -285,9 +285,30 @@ def edit_article(article_id):
 @app.route('/autism')
 def autism():
     category = Category.query.filter_by(name='Autism').first_or_404()
-    topics = Topic.query.filter_by(category_id=category.id).all()
-    articles = Article.query.filter_by(category_id=category.id).order_by(Article.date_created.desc()).all()
-    return render_template('autism.html', category=category, topics=topics, articles=articles)
+    topic_id = request.args.get("topic", type=int)
+
+    # Βασικό query άρθρων της κατηγορίας
+    q = Article.query.filter_by(category_id=category.id)
+
+    # Αν έχει συγκεκριμένο topic
+    if topic_id:
+        q = q.filter_by(topic_id=topic_id)
+
+    # Σελιδοποίηση (π.χ. ?page=2)
+    page = request.args.get("page", 1, type=int)
+    articles_paginated = q.order_by(Article.date_created.desc()).paginate(page=page, per_page=5)
+    articles = articles_paginated.items
+    # Φέρε όλα τα topics για dropdown
+    topics = Topic.query.filter_by(category_id=category.id).order_by(Topic.name).all()
+
+    return render_template(
+        "autism.html",               # χρησιμοποιούμε κοινό template
+        page_title="Αυτισμός",
+        category=category,
+        topics=topics,
+        articles=articles,
+        selected_topic_id=topic_id
+    )
 
 @app.route('/autism/topic/<string:topic_name>')
 def topic_articles(topic_name):
