@@ -26,6 +26,8 @@
             <p class="main-article-partial-text">
               {{ article.article_body | truncate(255) | safe }}
             </p>
+            <a href="{{ url_for('full_article', article_id=article.id) }}" class="btn btn-primary">Διαβάστε περισσότερα</a>
+
             <p class="">Από
               <span>
                 <a class="author-name" href="{{ url_for('articles_by_author', author_id=article.author.id) }}"> {{ article.author.username }}

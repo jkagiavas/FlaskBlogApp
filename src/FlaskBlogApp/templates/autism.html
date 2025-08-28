@@ -18,14 +18,23 @@
 
     <!-- Λίστα Άρθρων -->
     {% for article in articles %}
-      <div class="card my-3">
-        <div class="card-body">
-          <h4 class="card-title">{{ article.article_title }}</h4>
+      <div class="row my-3 p-3 bg-body rounded shadow-sm">
+          <div class="col col-md-12">
+            {% if article.article_image %}
+              <img src="{{ url_for('static', filename='images/articles_images/'+article.article_image) }}" alt=""
+                   class="img-responsive a_image" width="640px" height="360px">
+            {% endif %}
+          </div>
+          <div class="col col-md-12">
+            <div class="main-article-title">
+              <a class="article_title" href="{{ url_for('full_article',article_id=article.id) }}">{{ article.article_title | safe }}</a>
+            </div>
+          <small class="article_date">[{{ article.date_created.strftime('%d-%m-%Y') }}]</small>
           <p class="card-text">{{ article.article_body[:250] |safe }}...</p>
           <a href="{{ url_for('full_article', article_id=article.id) }}" class="btn btn-primary">Διαβάστε περισσότερα</a>
         </div>
         <div class="card-footer text-muted">
-          Από {{ article.author.username }} - {{ article.date_created.strftime('%d/%m/%Y') }}
+          Από {{ article.author.username }}
           {% if article.topic %}
             | Θέμα: <strong>{{ article.topic.name }}</strong>
           {% endif %}
