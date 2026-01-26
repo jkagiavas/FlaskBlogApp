@@ -5,13 +5,15 @@ from flask import (render_template,
                    redirect,
                    url_for,
                    request,
-                   flash)
+                   flash,
+                   Response)
 from .forms import SignupForm, LoginForm, NewArticleForm, AccountUpdateForm, CommentForm
 from . import app, db, bcrypt
 from .models import User, Article, Category, Topic, Comment
 from flask_login import login_user, current_user, logout_user, login_required
 import secrets, os
 from PIL import Image
+from datetime import datetime
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -333,3 +335,28 @@ def projects():
 
     articles = Article.query.filter_by(category_id=category.id, user_id=user.id).order_by(Article.date_created.desc()).all()
     return render_template('projects.html', articles=articles)
+
+@app.route("/sitemap.xml")
+def sitemap():
+    pages = []
+
+    # Αρχική σελίδα
+    pages.append({
+        "loc": url_for("root", _external=True),
+        "lastmod": datetime.now().date()
+    })
+
+    # Όλα τα άρθρα
+    articles = Article.query.all()
+    for article in articles:
+        pages.append({
+            "loc": url_for(
+                "full_article",
+                article_id=article.id,
+                _external=True
+            ),
+            "lastmod": article.date_created.date()
+        })
+
+    sitemap_xml = render_template("sitemap.xml", pages=pages)
+    return Response(sitemap_xml, mimetype="application/xml")
