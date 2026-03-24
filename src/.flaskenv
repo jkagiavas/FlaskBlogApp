@@ -1,0 +1,2 @@
+FLASK_APP=FlaskBlogApp
+FLASK_ENV=development

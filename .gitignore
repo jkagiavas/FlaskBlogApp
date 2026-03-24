@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.pyc
+
+# Env & secrets
+.env
+instance/
+FlaskBlogApp/flask_course_database.db
+
+# Virtual environment
+.venv/
+*.db
+.idea/
+reset_db.py
